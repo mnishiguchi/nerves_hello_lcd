@@ -23,7 +23,7 @@ defmodule NervesHelloLcd.MixProject do
   def application do
     [
       mod: {NervesHelloLcd.Application, []},
-      extra_applications: [:logger, :runtime_tools, :ex_lcd]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -38,10 +38,6 @@ defmodule NervesHelloLcd.MixProject do
       {:circuits_gpio, "~> 0.4"},
       {:circuits_spi, "~> 0.1"},
       {:circuits_i2c, "~> 0.1"},
-      {:ex_lcd,
-       git: "https://github.com/mnishiguchi/ex_lcd.git",
-       branch: "mnishiguchi/elixir-circuits",
-       targets: @all_targets},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11.3", targets: @all_targets},
