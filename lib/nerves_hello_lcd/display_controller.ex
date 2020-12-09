@@ -1,4 +1,3 @@
-# The base code is adopted from https://github.com/cthree/ex_lcd/blob/master/lib/ex_lcd.ex
 defmodule NervesHelloLcd.DisplayController do
   @moduledoc """
   ## Examples

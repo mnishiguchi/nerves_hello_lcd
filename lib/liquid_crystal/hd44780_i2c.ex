@@ -16,9 +16,12 @@ defmodule LiquidCrystal.HD44780.I2C do
   """
 
   use Bitwise
+
   require Logger
 
-  @behaviour LiquidCrystal.Driver
+  alias LiquidCrystal.I2C, as: SerialBus
+
+  @behaviour LiquidCrystal.DisplayDriver
 
   # flags for function set
   @font_size_5x10 0x04
@@ -61,7 +64,7 @@ defmodule LiquidCrystal.HD44780.I2C do
   @impl true
   def start(opts \\ []) do
     i2c_device = opts[:i2c_device] || "i2c-1"
-    {:ok, i2c_ref} = Circuits.I2C.open(i2c_device)
+    {:ok, i2c_ref} = SerialBus.open(i2c_device)
 
     number_of_lines = if opts[:rows] == 1, do: @number_of_lines_1, else: @number_of_lines_2
     font_size = if opts[:font_size] == "5x10", do: @font_size_5x10, else: @font_size_5x8
@@ -298,7 +301,7 @@ defmodule LiquidCrystal.HD44780.I2C do
     %{i2c_ref: i2c_ref, i2c_address: i2c_address, backlight: backlight} = display
     # log_write(display, byte)
     data = if(backlight, do: <<byte ||| @backlight_on>>, else: <<byte>>)
-    :ok = Circuits.I2C.write(i2c_ref, i2c_address, data)
+    :ok = SerialBus.write(i2c_ref, i2c_address, data)
     display
   end
 

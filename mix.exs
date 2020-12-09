@@ -15,9 +15,13 @@ defmodule NervesHelloLcd.MixProject do
       build_embedded: true,
       deps: deps(),
       releases: [{@app, release()}],
-      preferred_cli_target: [run: :host, test: :host]
+      preferred_cli_target: [run: :host, test: :host],
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
+
+  defp elixirc_paths(:test), do: ["test/support", "lib"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -38,6 +42,7 @@ defmodule NervesHelloLcd.MixProject do
       {:circuits_gpio, "~> 0.4"},
       {:circuits_spi, "~> 0.1"},
       {:circuits_i2c, "~> 0.1"},
+      {:mox, "~> 1.0.0", only: :test},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11.3", targets: @all_targets},

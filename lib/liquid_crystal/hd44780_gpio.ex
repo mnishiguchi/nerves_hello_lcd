@@ -22,9 +22,12 @@ defmodule LiquidCrystal.HD44780.GPIO do
   """
 
   use Bitwise
+
   require Logger
 
-  @behaviour LiquidCrystal.Driver
+  alias LiquidCrystal.GPIO, as: ParallelBus
+
+  @behaviour LiquidCrystal.DisplayDriver
 
   # flags for function set
   @font_size_5x8 0x00
@@ -93,12 +96,6 @@ defmodule LiquidCrystal.HD44780.GPIO do
   @impl true
   def stop(display) do
     {:ok, display} = execute(display, {:display, :off})
-
-    @pins_4bit
-    |> Enum.map(fn pin_name -> String.to_atom("#{pin_name}_ref") end)
-    |> Enum.filter(fn x -> not is_nil(display[x]) end)
-    |> Enum.each(fn x -> Circuits.GPIO.close(display[x]) end)
-
     :ok
   end
 
@@ -126,18 +123,17 @@ defmodule LiquidCrystal.HD44780.GPIO do
     |> write_feature(:entry_mode)
   end
 
-  # setup GPIO output pins, add the refs to the config and return
+  # Setup GPIO output pins, merge the refs to the config map.
   defp open_gpio_pins(config, pins) do
     config
     |> Map.take(pins)
-    |> Enum.map(fn {k, v} -> {String.to_atom("#{k}_ref"), start_pin(v, :output)} end)
+    |> Enum.map(fn {pin_name, pin_number} ->
+      with {:ok, gpio_ref} <- ParallelBus.open(pin_number, :output) do
+        {String.to_atom("#{pin_name}_ref"), gpio_ref}
+      end
+    end)
     |> Map.new()
     |> Map.merge(config)
-  end
-
-  # start Circuits.GPIO to manage a GPIO pin and return the ref
-  defp start_pin(pin, direction) do
-    with {:ok, ref} <- Circuits.GPIO.open(pin, direction), do: ref
   end
 
   @impl true
@@ -298,20 +294,20 @@ defmodule LiquidCrystal.HD44780.GPIO do
   end
 
   defp write_four_bits(display, bits) when is_integer(bits) do
-    :ok = Circuits.GPIO.write(display.d4_ref, bits &&& 0x01)
-    :ok = Circuits.GPIO.write(display.d5_ref, bits >>> 1 &&& 0x01)
-    :ok = Circuits.GPIO.write(display.d6_ref, bits >>> 2 &&& 0x01)
-    :ok = Circuits.GPIO.write(display.d7_ref, bits >>> 3 &&& 0x01)
+    :ok = ParallelBus.write(display.d4_ref, bits &&& 0x01)
+    :ok = ParallelBus.write(display.d5_ref, bits >>> 1 &&& 0x01)
+    :ok = ParallelBus.write(display.d6_ref, bits >>> 2 &&& 0x01)
+    :ok = ParallelBus.write(display.d7_ref, bits >>> 3 &&& 0x01)
     pulse_enable(display)
   end
 
   defp register_select(display, flag) when flag in 0..1 do
-    :ok = Circuits.GPIO.write(display.rs_ref, flag)
+    :ok = ParallelBus.write(display.rs_ref, flag)
     display
   end
 
   defp enable(display, flag) when flag in 0..1 do
-    :ok = Circuits.GPIO.write(display.en_ref, flag)
+    :ok = ParallelBus.write(display.en_ref, flag)
     display
   end
 

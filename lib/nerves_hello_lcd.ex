@@ -15,22 +15,20 @@ defmodule NervesHelloLcd do
     DisplayController.execute(pid, {:right, 1})
     DisplayController.execute(pid, {:print, "world"})
     Process.sleep(500)
+    DisplayController.execute(pid, {:cursor, :off})
+    Process.sleep(500)
     DisplayController.execute(pid, {:backlight, :off})
     Process.sleep(500)
     DisplayController.execute(pid, {:backlight, :on})
     Process.sleep(500)
-    DisplayController.execute(pid, {:scroll, 1})
-    Process.sleep(500)
-    DisplayController.execute(pid, {:scroll, 1})
-    Process.sleep(500)
-    DisplayController.execute(pid, {:scroll, 1})
-    Process.sleep(500)
-    DisplayController.execute(pid, {:scroll, -1})
-    Process.sleep(500)
-    DisplayController.execute(pid, {:scroll, -1})
-    Process.sleep(500)
-    DisplayController.execute(pid, {:scroll, -1})
-    Process.sleep(500)
+    (0..3) |> Enum.each fn _ ->
+      DisplayController.execute(pid, {:scroll, 1})
+      Process.sleep(500)
+    end
+    (0..3) |> Enum.each fn _ ->
+      DisplayController.execute(pid, {:scroll, -1})
+      Process.sleep(500)
+    end
     DisplayController.execute(pid, :clear)
 
     # TODO: Test more commands
