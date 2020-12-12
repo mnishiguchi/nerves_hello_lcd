@@ -58,6 +58,9 @@ defmodule LiquidCrystal.HD44780.GPIO do
   @shift_display 0x08
   @shift_right 0x04
 
+  # flags for backlight control
+  @backlight_on 0x08
+
   @pins_4bit [:rs, :en, :d4, :d5, :d6, :d7]
 
   @required_config_keys [:name, :rs, :en, :d4, :d5, :d6, :d7, :rows, :cols]
@@ -83,7 +86,8 @@ defmodule LiquidCrystal.HD44780.GPIO do
         # Initial values for features that we can change later.
         # They will be updated when the "command" function is called.
         display_control: @cmd_display_control,
-        entry_mode: @cmd_entry_mode_set
+        entry_mode: @cmd_entry_mode_set,
+        backlight: true
       })
       |> open_gpio_pins(@pins_4bit)
       |> register_select(0)
@@ -95,7 +99,7 @@ defmodule LiquidCrystal.HD44780.GPIO do
 
   @impl true
   def stop(display) do
-    {:ok, display} = execute(display, {:display, :off})
+    execute(display, {:display, :off})
     :ok
   end
 
@@ -203,6 +207,9 @@ defmodule LiquidCrystal.HD44780.GPIO do
     {:ok, enable_feature(display, :entry_mode, @entry_left)}
   end
 
+  def execute(display, {:backlight, :off}), do: {:ok, set_backlight(display, false)}
+  def execute(display, {:backlight, :on}), do: {:ok, set_backlight(display, true)}
+
   def execute(display, {:scroll, 0}), do: {:ok, display}
 
   # Scroll the entire display left
@@ -265,6 +272,11 @@ defmodule LiquidCrystal.HD44780.GPIO do
     write_instruction(display, @cmd_set_ddram_address ||| col + offset)
   end
 
+  defp set_backlight(display, flag) when is_boolean(flag) do
+    # Set backlight and write 0 (nothing) to trigger it.
+    %{display | backlight: flag} |> write_data(0)
+  end
+
   defp disable_feature(display, feature_key, flag)
        when is_atom(feature_key) and is_integer(flag) do
     %{display | feature_key => Map.fetch!(display, feature_key) &&& ~~~flag}
@@ -285,7 +297,10 @@ defmodule LiquidCrystal.HD44780.GPIO do
   defp write_instruction(display, byte), do: write_byte(display, byte, 0)
   defp write_data(display, byte), do: write_byte(display, byte, 1)
 
-  defp write_byte(display, byte, mode \\ 0) when is_integer(byte) and mode in 0..1 do
+  defp write_byte(%{backlight: backlight} = display, byte, mode \\ 0)
+       when is_integer(byte) and mode in 0..1 do
+    byte = if(backlight, do: byte ||| @backlight_on, else: byte)
+
     display
     |> register_select(mode)
     |> delay(1)

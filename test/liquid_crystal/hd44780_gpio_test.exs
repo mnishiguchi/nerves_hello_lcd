@@ -71,8 +71,8 @@ defmodule LiquidCrystal.HD44780.GPIOTest do
       assert {:ok, %{}} = HD44780.GPIO.execute(d, {:autoscroll, :on})
       assert {:ok, %{}} = HD44780.GPIO.execute(d, {:right_to_left, :on})
       assert {:ok, %{}} = HD44780.GPIO.execute(d, {:left_to_right, :on})
-      # assert {:ok, %{}} = HD44780.GPIO.execute(d, {:backlight, :off})
-      # assert {:ok, %{}} = HD44780.GPIO.execute(d, {:backlight, :on})
+      assert {:ok, %{}} = HD44780.GPIO.execute(d, {:backlight, :off})
+      assert {:ok, %{}} = HD44780.GPIO.execute(d, {:backlight, :on})
       assert {:ok, %{}} = HD44780.GPIO.execute(d, {:scroll, 2})
       assert {:ok, %{}} = HD44780.GPIO.execute(d, {:left, 2})
       assert {:ok, %{}} = HD44780.GPIO.execute(d, {:right, 2})
@@ -96,10 +96,10 @@ defmodule LiquidCrystal.HD44780.GPIOTest do
       assert {:ok, %{display_control: 12}} = HD44780.GPIO.execute(d, {:display, :on})
     end
 
-    # test "change backlight", %{display: d} do
-    #   assert {:ok, %{backlight: false}} = HD44780.GPIO.execute(d, {:backlight, :off})
-    #   assert {:ok, %{backlight: true}} = HD44780.GPIO.execute(d, {:backlight, :on})
-    # end
+    test "change backlight", %{display: d} do
+      assert {:ok, %{backlight: false}} = HD44780.GPIO.execute(d, {:backlight, :off})
+      assert {:ok, %{backlight: true}} = HD44780.GPIO.execute(d, {:backlight, :on})
+    end
   end
 
   defp start_display do
