@@ -22,6 +22,7 @@ defmodule LiquidCrystal.HD44780.GPIOTest do
 
   test "start display" do
     assert %{
+             driver_module: LiquidCrystal.HD44780.GPIO,
              name: "display 1",
              font_size: "5x8",
              rows: 2,

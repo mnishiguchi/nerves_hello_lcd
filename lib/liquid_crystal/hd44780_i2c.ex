@@ -62,7 +62,7 @@ defmodule LiquidCrystal.HD44780.I2C do
   @default_cols 16
 
   @impl true
-  def start(opts \\ []) do
+  def start(opts \\ []) when is_list(opts) do
     i2c_device = opts[:i2c_device] || "i2c-1"
     {:ok, i2c_ref} = SerialBus.open(i2c_device)
 
@@ -71,6 +71,7 @@ defmodule LiquidCrystal.HD44780.I2C do
 
     display =
       %{
+        driver_module: __MODULE__,
         name: opts[:name] || i2c_device,
         i2c_ref: i2c_ref,
         i2c_address: opts[:i2c_address] || @default_i2c_address,
@@ -138,8 +139,8 @@ defmodule LiquidCrystal.HD44780.I2C do
   end
 
   # Writes a list of integers.
-  def execute(display, {:write, byte}) when is_list(byte) do
-    byte |> Enum.each(fn x -> write_data(display, x) end)
+  def execute(display, {:write, bytes}) when is_list(bytes) do
+    Enum.each(bytes, &write_data(display, &1))
     {:ok, display}
   end
 

@@ -1,48 +1,51 @@
 defmodule NervesHelloLcd.DisplaySupervisor do
-  alias NervesHelloLcd.DisplayController
-
   @moduledoc """
-  ## Examples
-
-      # GPIO
-      pid = DisplaySupervisor.controller_process({
-        LiquidCrystal.HD44780.GPIO,
-        %{name: "display 1", rs: 1, en: 2, d4: 3, d5: 4, d6: 5, d7: 6, rows: 2, cols: 20}
-      })
-
-      # I2C
-      pid = DisplaySupervisor.controller_process({
-        LiquidCrystal.HD44780.I2C,
-        %{name: "display 1"}
-      })
-
+  Supervises display controller processes.
   """
 
-  def child_spec(_args) do
-    %{
-      id: __MODULE__,
-      start: {__MODULE__, :start_link, []},
-      type: :supervisor
-    }
+  # https://hexdocs.pm/elixir/DynamicSupervisor.html
+  use DynamicSupervisor
+
+  alias NervesHelloLcd.DisplayController
+
+  def start_link(_args) do
+    DynamicSupervisor.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
-  def start_link() do
-    DynamicSupervisor.start_link(name: __MODULE__, strategy: :one_for_one)
+  @impl true
+  def init(_args) do
+    DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def controller_process(args) do
-    existing_process(args) || new_process(args)
+  @doc """
+  Finds or create a DisplayController process.
+
+  ## Examples
+    pid = DisplaySupervisor.display_controller(
+      LiquidCrystal.HD44780.I2C,
+      name: "display 1"
+    )
+  """
+  def display_controller(driver_module, config) when is_atom(driver_module) and is_list(config) do
+    display_name = Keyword.fetch!(config, :name)
+
+    case DisplayController.whereis({driver_module, display_name}) do
+      nil -> start_child(driver_module, config)
+      pid -> pid
+    end
   end
 
-  defp existing_process({driver_module, config}) when is_atom(driver_module) and is_map(config) do
-    DisplayController.whereis({driver_module, config[:name] || "display"})
-  end
+  defp start_child(driver_module, config) do
+    display = initialize_display(driver_module, config)
 
-  defp new_process({driver_module, config} = args)
-       when is_atom(driver_module) and is_map(config) do
-    case DynamicSupervisor.start_child(__MODULE__, {DisplayController, args}) do
+    case DynamicSupervisor.start_child(__MODULE__, DisplayController.child_spec(display)) do
       {:ok, pid} -> pid
       {:error, {:already_started, pid}} -> pid
     end
+  end
+
+  defp initialize_display(driver_module, config) do
+    {:ok, display} = apply(driver_module, :start, [config])
+    display
   end
 end

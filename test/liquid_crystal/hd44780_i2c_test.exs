@@ -23,6 +23,7 @@ defmodule LiquidCrystal.HD44780.I2CTest do
     assert {:ok, display} = HD44780.I2C.start([])
 
     assert %{
+             driver_module: LiquidCrystal.HD44780.I2C,
              i2c_address: 0x27,
              name: "i2c-1",
              i2c_ref: i2c_ref,

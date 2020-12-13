@@ -81,6 +81,7 @@ defmodule LiquidCrystal.HD44780.GPIO do
 
     display =
       Map.merge(opts, %{
+        driver_module: __MODULE__,
         rows: opts[:rows] || 2,
         cols: opts[:cols] || 16,
         # Initial values for features that we can change later.
@@ -158,8 +159,8 @@ defmodule LiquidCrystal.HD44780.GPIO do
   end
 
   # Writes a list of integers.
-  def execute(display, {:write, byte}) when is_list(byte) do
-    byte |> Enum.each(fn x -> write_data(display, x) end)
+  def execute(display, {:write, bytes}) when is_list(bytes) do
+    Enum.each(bytes, &write_data(display, &1))
     {:ok, display}
   end
 

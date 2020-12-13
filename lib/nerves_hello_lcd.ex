@@ -5,10 +5,12 @@ defmodule NervesHelloLcd do
   A test program for quick check.
   """
   def hello do
-    pid = DisplaySupervisor.controller_process({
-      LiquidCrystal.HD44780.I2C,
-      %{name: "display 1"}
-    })
+    pid =
+      DisplaySupervisor.display_controller(
+        LiquidCrystal.HD44780.I2C,
+        name: "display 1"
+      )
+
     DisplayController.execute(pid, {:cursor, :on})
     DisplayController.execute(pid, {:print, "Hello"})
     Process.sleep(500)
@@ -21,14 +23,19 @@ defmodule NervesHelloLcd do
     Process.sleep(500)
     DisplayController.execute(pid, {:backlight, :on})
     Process.sleep(500)
-    (0..3) |> Enum.each fn _ ->
+
+    0..3
+    |> Enum.each(fn _ ->
       DisplayController.execute(pid, {:scroll, 1})
       Process.sleep(500)
-    end
-    (0..3) |> Enum.each fn _ ->
+    end)
+
+    0..3
+    |> Enum.each(fn _ ->
       DisplayController.execute(pid, {:scroll, -1})
       Process.sleep(500)
-    end
+    end)
+
     DisplayController.execute(pid, :clear)
 
     # TODO: Test more commands

@@ -1,20 +1,16 @@
 defmodule NervesHelloLcd.DisplayController do
   @moduledoc """
-  ## Examples
-
-    {:ok, pid} = DisplayController.start_link({LiquidCrystal.HD44780.I2C, %{name: "display 1"}})
-    DisplayController.execute(pid, {:print, "Hello"})
-    DisplayController.execute(pid, {:backlight, :off})
-    DisplayController.execute(pid, {:backlight, :on})
-    DisplayController.execute(pid, :clear)
-
+  Wraps a given display driver and controls the display using that driver.
   """
 
   use GenServer
   require Logger
 
-  defmodule State do
-    defstruct driver_module: nil, display: nil
+  def child_spec(%{name: display_name} = initial_display) do
+    %{
+      id: {__MODULE__, display_name},
+      start: {__MODULE__, :start_link, [initial_display]}
+    }
   end
 
   # Used as a unique process name.
@@ -29,32 +25,41 @@ defmodule NervesHelloLcd.DisplayController do
     end
   end
 
-  def start_link({driver_module, config} = args) when is_atom(driver_module) and is_map(config) do
-    GenServer.start_link(__MODULE__, args, name: via_tuple({driver_module, config.name}))
+  @doc """
+  Accepts a map that a display driver returns, starts a process, and registers
+  a process with a composite key of driver module and display name.
+
+  ## Examples
+    {:ok, display} = LiquidCrystal.HD44780.I2C.start(name: "display 2")
+    {:ok, pid} = DisplayController.start_link(display)
+    DisplayController.execute(pid, {:print, "Hello"})
+  """
+  def start_link(%{driver_module: driver_module, name: display_name} = initial_display) do
+    GenServer.start_link(__MODULE__, initial_display,
+      name: via_tuple({driver_module, display_name})
+    )
   end
 
+  @doc """
+  Accepts a map that a display driver returns, and delegates the operation to
+  the display driver.
+
+  ## Examples
+    DisplayController.execute(pid, {:print, "Hello"})
+  """
   def execute(pid, op), do: GenServer.call(pid, op)
 
   @impl true
-  def init({driver_module, config}) do
-    # Start an LCD driver and get a display map.
-    with {:ok, display} <- initialize_display(driver_module, config) do
-      {:ok, %State{driver_module: driver_module, display: display}}
-    end
-  end
+  def init(initial_display), do: {:ok, initial_display}
 
   @impl true
-  def handle_call(command, _from, state) do
-    {_, display} = result = control_display(command, state)
+  def handle_call(command, _from, display) do
+    {_ok_or_error, new_display} = result = control_display(command, display)
     Logger.info(inspect(result))
-    {:reply, result, %State{state | display: display}}
+    {:reply, result, Map.merge(display, new_display)}
   end
 
-  defp initialize_display(driver_module, config) do
-    apply(driver_module, :start, [config])
-  end
-
-  defp control_display(command, %State{driver_module: driver_module, display: display}) do
+  defp control_display(command, %{driver_module: driver_module} = display) do
     apply(driver_module, :execute, [display, command])
   end
 end
