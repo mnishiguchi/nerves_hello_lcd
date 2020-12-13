@@ -30,7 +30,7 @@ defmodule NervesHelloLcd.DisplayController do
   a process with a composite key of driver module and display name.
 
   ## Examples
-    {:ok, display} = LiquidCrystal.HD44780.I2C.start(name: "display 2")
+    {:ok, display} = LcdDisplay.HD44780.I2C.start(name: "display 2")
     {:ok, pid} = DisplayController.start_link(display)
     DisplayController.execute(pid, {:print, "Hello"})
   """

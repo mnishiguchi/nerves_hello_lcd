@@ -16,7 +16,7 @@ defmodule NervesHelloLcd.DisplayControllerTest do
     assert {:ok, _pid} = DisplayController.start_link(display_stub(name: display_name))
 
     ## This error keeps on happening. It is OK. I can check manually.
-    ##   ** (Mox.UnexpectedCallError) no expectation defined for MockDisplayDriver.execute/2
+    ##   ** (Mox.UnexpectedCallError) no expectation defined for LcdDisplay.MockDisplayDriver.execute/2
     # assert {:ok, _display} = DisplayController.execute(pid, {:print, "Hello"})
   end
 
@@ -24,14 +24,14 @@ defmodule NervesHelloLcd.DisplayControllerTest do
     display_name = Keyword.fetch!(display, :name)
 
     # https://hexdocs.pm/mox/Mox.html#stub/3
-    MockDisplayDriver
+    LcdDisplay.MockDisplayDriver
     |> stub(:start, fn _opts -> {:ok, display_stub(display_name)} end)
     |> stub(:execute, fn _display, _command -> {:ok, display_stub(display_name)} end)
   end
 
   defp display_stub(name) do
     %{
-      driver_module: MockDisplayDriver,
+      driver_module: LcdDisplay.MockDisplayDriver,
       name: name,
       i2c_address: 39,
       i2c_ref: make_ref(),

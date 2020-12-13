@@ -39,9 +39,7 @@ defmodule NervesHelloLcd.MixProject do
       {:shoehorn, "~> 0.7.0"},
       {:ring_logger, "~> 0.8.1"},
       {:toolshed, "~> 0.2.13"},
-      {:circuits_gpio, "~> 0.4"},
-      {:circuits_spi, "~> 0.1"},
-      {:circuits_i2c, "~> 0.1"},
+      {:lcd_display, github: "mnishiguchi/lcd_display"},
       {:mox, "~> 1.0.0", only: :test},
 
       # Dependencies for all targets except :host

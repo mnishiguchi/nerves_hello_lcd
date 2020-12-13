@@ -7,7 +7,7 @@ defmodule NervesHelloLcd do
   def hello do
     pid =
       DisplaySupervisor.display_controller(
-        LiquidCrystal.HD44780.I2C,
+        LcdDisplay.HD44780.I2C,
         name: "display 1"
       )
 
@@ -27,13 +27,13 @@ defmodule NervesHelloLcd do
     0..3
     |> Enum.each(fn _ ->
       DisplayController.execute(pid, {:scroll, 1})
-      Process.sleep(500)
+      Process.sleep(300)
     end)
 
     0..3
     |> Enum.each(fn _ ->
       DisplayController.execute(pid, {:scroll, -1})
-      Process.sleep(500)
+      Process.sleep(300)
     end)
 
     DisplayController.execute(pid, :clear)

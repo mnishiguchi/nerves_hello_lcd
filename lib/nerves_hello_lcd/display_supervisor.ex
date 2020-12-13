@@ -22,7 +22,7 @@ defmodule NervesHelloLcd.DisplaySupervisor do
 
   ## Examples
     pid = DisplaySupervisor.display_controller(
-      LiquidCrystal.HD44780.I2C,
+      LcdDisplay.HD44780.I2C,
       name: "display 1"
     )
   """
