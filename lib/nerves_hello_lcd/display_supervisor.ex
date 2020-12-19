@@ -23,13 +23,13 @@ defmodule NervesHelloLcd.DisplaySupervisor do
   ## Examples
     pid = DisplaySupervisor.display_controller(
       LcdDisplay.HD44780.I2C,
-      name: "display 1"
+      display_name: "display 1"
     )
   """
   def display_controller(driver_module, config) when is_atom(driver_module) do
     config = Enum.into(config, %{})
 
-    case DisplayController.whereis({driver_module, config.name}) do
+    case DisplayController.whereis({driver_module, config.display_name}) do
       nil -> start_child(driver_module, config)
       pid -> pid
     end

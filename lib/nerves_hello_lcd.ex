@@ -3,12 +3,19 @@ defmodule NervesHelloLcd do
 
   @doc """
   A test program for quick check.
+
+  ## Examples
+      test_fn = fn ->
+        Process.sleep(5000)
+        Task.start_link(fn -> NervesHelloLcd.hello_gpio() end)
+        Task.start_link(fn -> NervesHelloLcd.hello_i2c() end)
+      end
   """
   def hello_i2c do
     pid =
       DisplaySupervisor.display_controller(
         LcdDisplay.HD44780.I2C,
-        name: "display 1"
+        display_name: "display 1"
       )
 
     cursor_and_print(pid)
@@ -22,10 +29,21 @@ defmodule NervesHelloLcd do
     pid =
       DisplaySupervisor.display_controller(
         LcdDisplay.HD44780.GPIO,
-        %{name: "display 1", rs: 2, rw: 3, en: 4, d4: 23, d5: 24, d6: 25, d7: 26}
+        %{
+          display_name: "display 2",
+          pin_rs: 5,
+          pin_rw: 6,
+          pin_en: 13,
+          pin_d4: 23,
+          pin_d5: 24,
+          pin_d6: 25,
+          pin_d7: 26,
+          pin_led_5v: 12
+        }
       )
 
     cursor_and_print(pid)
+    backlight_off_on(pid)
     scroll_right_and_left(pid)
 
     DisplayController.execute(pid, :clear)
