@@ -40,7 +40,6 @@ defmodule NervesHelloLcd.MixProject do
       {:ring_logger, "~> 0.8.1"},
       {:toolshed, "~> 0.2.13"},
       {:lcd_display, github: "mnishiguchi/lcd_display", branch: "dev"},
-      {:mox, "~> 1.0.0", only: :test},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11.3", targets: @all_targets},
