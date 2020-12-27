@@ -29,6 +29,21 @@ defmodule NervesHelloLcd do
     pid
   end
 
+  def hello_pwm(ch \\ 0) do
+    {:ok, state} = PCA9685.start(%{})
+    hello_pwm_loop(state, ch)
+  end
+
+  defp hello_pwm_loop(state, ch \\ 0) do
+    (Enum.to_list(1..100) ++ Enum.to_list(99..0))
+    |> Enum.each(fn x ->
+      PCA9685.set_pwm_by_percentage(state, ch, x)
+      Process.sleep(10)
+    end)
+
+    hello_pwm_loop(state)
+  end
+
   defp qa_steps(pid) do
     cursor_and_print(pid)
     blink_and_print(pid)
